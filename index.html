@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Velvet Cinema</title>
+  <style>
+    :root {
+      --bg:#09070d;
+      --bg-soft:#130d19;
+      --glass:rgba(255,255,255,.11);
+      --stroke:rgba(255,255,255,.18);
+      --text:#fff7fb;
+      --muted:#dbc8d6;
+      --pink:#ff4f8d;
+      --rose:#ff7eac;
+      --red:#d9234f;
+      --gold:#ffd7aa;
+      --radius:20px;
+      --shadow:0 10px 40px rgba(0,0,0,.4);
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;height:100%;font-family:"Inter", "SF Pro Display", system-ui, sans-serif;background:radial-gradient(circle at 20% 10%, #351328, var(--bg));color:var(--text);overflow-x:hidden}
+    body::before{
+      content:"";position:fixed;inset:-20%;z-index:-2;
+      background: conic-gradient(from 0deg at 30% 40%, rgba(255,72,140,.28), rgba(217,35,79,.16), rgba(113,59,255,.15), rgba(255,72,140,.28));
+      filter: blur(70px);
+      animation: drift 16s ease-in-out infinite alternate;
+    }
+    @keyframes drift{to{transform:translate(4%, -2%) scale(1.08) rotate(14deg)}}
+
+    .particles{position:fixed;inset:0;pointer-events:none;z-index:-1;overflow:hidden}
+    .heart{position:absolute;font-size:14px;opacity:.35;animation:floatUp linear infinite}
+    @keyframes floatUp{from{transform:translateY(110vh) scale(.7)}to{transform:translateY(-15vh) scale(1.35)}}
+
+    .screen{min-height:100vh;display:none;padding:24px}
+    .screen.active{display:block;animation:fadeIn .7s ease both}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+    .glass{background:var(--glass);backdrop-filter: blur(18px);-webkit-backdrop-filter: blur(18px);border:1px solid var(--stroke);box-shadow:var(--shadow)}
+
+    .profile-wrap{display:grid;place-items:center;min-height:calc(100vh - 48px)}
+    .profile-panel{width:min(980px,96vw);padding:36px;border-radius:32px}
+    .title{font-size:clamp(1.8rem,4vw,3rem);text-align:center;letter-spacing:.02em;margin:0}
+    .subtitle{text-align:center;color:var(--muted);margin:10px 0 28px}
+    .profiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px}
+    .profile{padding:14px;border-radius:22px;text-align:center;cursor:pointer;transition:.35s;position:relative;overflow:hidden}
+    .profile:hover{transform:translateY(-6px) scale(1.02);box-shadow:0 0 35px rgba(255,120,175,.38)}
+    .profile img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:18px;border:1px solid rgba(255,255,255,.28)}
+    .profile span{display:block;margin-top:10px;font-weight:600}
+
+    .loader{position:fixed;inset:0;display:none;place-items:center;background:rgba(8,5,12,.85);backdrop-filter:blur(8px);z-index:10}
+    .loader.active{display:grid}
+    .pulse{width:70px;height:70px;border-radius:50%;border:3px solid rgba(255,255,255,.25);border-top-color:var(--rose);animation:spin 1s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .topbar{position:sticky;top:10px;z-index:6;display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-radius:999px;margin:0 auto 18px;width:min(1200px,98%)}
+    .logo{font-weight:800;letter-spacing:.04em;background:linear-gradient(90deg,var(--rose),#fff);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .btn{border:none;border-radius:999px;padding:10px 16px;background:rgba(255,255,255,.15);color:var(--text);cursor:pointer;backdrop-filter:blur(8px);transition:.25s}
+    .btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.23)}
+
+    .hero{width:min(1200px,98%);margin:0 auto 24px;border-radius:30px;padding:48px 34px;position:relative;overflow:hidden;background:
+      linear-gradient(100deg, rgba(8,8,14,.85), rgba(45,9,33,.65) 45%, rgba(217,35,79,.45)),
+      url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1600&q=80') center/cover}
+    .hero h1{font-size:clamp(2rem,5vw,3.8rem);margin:0 0 10px}
+    .hero p{max-width:560px;color:#f9e9ef;line-height:1.5}
+    .hero .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+
+    .section{width:min(1200px,98%);margin:0 auto 26px}
+    .section h2{font-size:1.2rem;margin:8px 6px 14px;color:#ffe6f3}
+    .row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(160px,210px);gap:14px;overflow-x:auto;padding:4px 6px 12px;scroll-snap-type:x mandatory}
+    .row::-webkit-scrollbar{height:8px}.row::-webkit-scrollbar-thumb{background:linear-gradient(90deg,var(--rose),var(--red));border-radius:99px}
+    .card{position:relative;scroll-snap-align:start;border-radius:20px;overflow:hidden;min-height:290px;cursor:pointer;border:1px solid rgba(255,255,255,.2);transition:.3s}
+    .card:hover{transform:scale(1.05);box-shadow:0 0 28px rgba(255,105,163,.4)}
+    .card img{width:100%;height:100%;object-fit:cover}
+    .card .overlay{position:absolute;inset:auto 0 0 0;padding:12px;background:linear-gradient(to top,rgba(5,5,9,.9),transparent);font-weight:600}
+
+    .player-modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(7,3,11,.73);backdrop-filter:blur(14px);z-index:20;padding:18px}
+    .player-modal.active{display:grid;animation:fadeIn .45s ease}
+    .player-shell{width:min(1100px,100%);display:grid;grid-template-columns:2fr 1fr;gap:16px}
+    .video-panel,.letter-panel{border-radius:24px;padding:16px}
+    video{width:100%;border-radius:18px;box-shadow:0 0 35px rgba(255,99,158,.35)}
+    .controls{display:flex;gap:10px;align-items:center;margin-top:10px}
+    .progress{flex:1;height:8px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;cursor:pointer}
+    .progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--rose),var(--gold))}
+    .letter-panel h3{margin-top:0;font-family:"Segoe Script","Snell Roundhand",cursive;font-size:1.8rem}
+    .letter-text{line-height:1.7;color:#ffeef6;animation:fadeIn 1s ease}
+
+    footer{padding:32px 8px 44px;text-align:center;color:#ffe8f4;opacity:.9;text-shadow:0 0 18px rgba(255,143,196,.65)}
+
+    @media (max-width:900px){.player-shell{grid-template-columns:1fr}.hero{padding:30px 20px}}
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+  <div class="loader" id="loader"><div class="pulse"></div></div>
+
+  <section class="screen active" id="profileScreen">
+    <div class="profile-wrap">
+      <div class="profile-panel glass">
+        <h1 class="title">Choose Profile</h1>
+        <p class="subtitle">A private cinema, crafted for your hearts.</p>
+        <div class="profiles">
+          <!-- EDIT HERE: Profile 1 -->
+          <article class="profile glass" data-profile="Avery & Noor"><img src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=500&q=80" alt="Profile 1"><span contenteditable="true">Avery &amp; Noor</span></article>
+          <!-- EDIT HERE: Profile 2 -->
+          <article class="profile glass" data-profile="Mia & Luca"><img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=500&q=80" alt="Profile 2"><span contenteditable="true">Mia &amp; Luca</span></article>
+          <!-- EDIT HERE: Profile 3 -->
+          <article class="profile glass" data-profile="Sage & Eli"><img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&w=500&q=80" alt="Profile 3"><span contenteditable="true">Sage &amp; Eli</span></article>
+          <!-- EDIT HERE: Profile 4 -->
+          <article class="profile glass" data-profile="Rin & Theo"><img src="https://images.unsplash.com/photo-1521119989659-a83eee488004?auto=format&fit=crop&w=500&q=80" alt="Profile 4"><span contenteditable="true">Rin &amp; Theo</span></article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="screen" id="homeScreen">
+    <nav class="topbar glass">
+      <div class="logo">VELVETFLIX</div>
+      <div>
+        <button class="btn" id="musicBtn">♫ Ambience</button>
+        <button class="btn" id="backBtn">Switch Profile</button>
+      </div>
+    </nav>
+
+    <!-- EDIT HERE: Hero title/description/background style -->
+    <section class="hero glass">
+      <h1 contenteditable="true">Midnight in Our Universe</h1>
+      <p contenteditable="true">Every glance, every laugh, every little chaos — collected into one endless stream of memories we can replay forever.</p>
+      <div class="actions">
+        <button class="btn" id="playHero">▶ Play</button>
+        <button class="btn">♡ Our Memories</button>
+      </div>
+    </section>
+
+    <div id="rows"></div>
+    <footer>Made with love and all my heart.</footer>
+  </main>
+
+  <section class="player-modal" id="playerModal">
+    <div class="player-shell">
+      <div class="video-panel glass">
+        <!-- EDIT HERE: default video URL -->
+        <video id="video" src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"></video>
+        <div class="controls">
+          <button class="btn" id="playPause">Play</button>
+          <div class="progress" id="progress"><span id="bar"></span></div>
+          <button class="btn" id="fullBtn">Fullscreen</button>
+          <button class="btn" id="closeBtn">Close</button>
+        </div>
+      </div>
+      <aside class="letter-panel glass">
+        <h3>Letter For You</h3>
+        <!-- EDIT HERE: love letter text -->
+        <p contenteditable="true" class="letter-text" id="letterText">If life is a cinema, then you are every golden scene. Thank you for making even ordinary days feel like opening night.</p>
+      </aside>
+    </div>
+  </section>
+
+  <audio id="bgm" loop src="https://cdn.pixabay.com/download/audio/2022/02/09/audio_6a4b4f4b50.mp3?filename=relaxing-145038.mp3"></audio>
+
+  <script>
+    const catalog = {
+      "Continue Watching ❤️": [
+        // EDIT HERE: title, cover, video
+        ["Sunset Promise","https://images.unsplash.com/photo-1516589091380-5d8e87df6999?auto=format&fit=crop&w=500&q=80","https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"],
+        ["Taxi Kisses","https://images.unsplash.com/photo-1513279922550-250c2129b13a?auto=format&fit=crop&w=500&q=80","https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"],
+      ],
+      "Our Favorite Moments ✨": [["City Lights","https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=500&q=80","https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"]],
+      "Date Night Movies 🌙": [["Starlit Dinner","https://images.unsplash.com/photo-1464979681340-bdd28a61699e?auto=format&fit=crop&w=500&q=80","https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"]],
+      "Romantic Chaos 💌": [["Rain + Laughter","https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=500&q=80","https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"]],
+      "Comfort Films ☁️": [["Blanket Fort","https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=500&q=80","https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm"]],
+      "Letters For You 💖": [["Always Yours","https://images.unsplash.com/photo-1518568814500-bf0f8d125f46?auto=format&fit=crop&w=500&q=80","https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4"]]
+    };
+
+    const rows = document.getElementById('rows');
+    Object.entries(catalog).forEach(([heading, items]) => {
+      const section = document.createElement('section');
+      section.className = 'section';
+      section.innerHTML = `<h2>${heading}</h2><div class="row"></div>`;
+      const row = section.querySelector('.row');
+      items.forEach(([title, img, video]) => {
+        const card = document.createElement('article');
+        card.className = 'card glass';
+        card.innerHTML = `<img src="${img}" alt="${title}"><div class="overlay" contenteditable="true">${title}</div>`;
+        card.addEventListener('click', () => openPlayer(video, title));
+        row.appendChild(card);
+      });
+      rows.appendChild(section);
+    });
+
+    const profileScreen = document.getElementById('profileScreen');
+    const homeScreen = document.getElementById('homeScreen');
+    const loader = document.getElementById('loader');
+    document.querySelectorAll('.profile').forEach(p => p.addEventListener('click', () => {
+      loader.classList.add('active');
+      setTimeout(() => {
+        profileScreen.classList.remove('active');
+        homeScreen.classList.add('active');
+        loader.classList.remove('active');
+      }, 900);
+    }));
+
+    document.getElementById('backBtn').onclick = () => {homeScreen.classList.remove('active'); profileScreen.classList.add('active');};
+
+    const modal = document.getElementById('playerModal');
+    const video = document.getElementById('video');
+    const bar = document.getElementById('bar');
+    const playPause = document.getElementById('playPause');
+    function openPlayer(src){ video.src = src; modal.classList.add('active'); video.play(); playPause.textContent='Pause'; }
+    document.getElementById('closeBtn').onclick = () => {modal.classList.remove('active'); video.pause();};
+    document.getElementById('playHero').onclick = () => openPlayer(video.src);
+    playPause.onclick = () => video.paused ? (video.play(), playPause.textContent='Pause') : (video.pause(), playPause.textContent='Play');
+    video.ontimeupdate = () => { bar.style.width = (video.currentTime / video.duration * 100 || 0) + '%'; };
+    document.getElementById('progress').onclick = (e) => {
+      const r = e.currentTarget.getBoundingClientRect();
+      video.currentTime = ((e.clientX - r.left) / r.width) * video.duration;
+    };
+    document.getElementById('fullBtn').onclick = () => video.requestFullscreen?.();
+
+    const bgm = document.getElementById('bgm');
+    let musicOn = false;
+    document.getElementById('musicBtn').onclick = () => {
+      musicOn = !musicOn;
+      if (musicOn) { bgm.volume = .32; bgm.play(); } else { bgm.pause(); }
+    };
+
+    const particles = document.getElementById('particles');
+    for (let i = 0; i < 28; i++) {
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = i % 2 ? '❤' : '✦';
+      h.style.left = Math.random() * 100 + 'vw';
+      h.style.animationDuration = (10 + Math.random() * 16) + 's';
+      h.style.animationDelay = (-Math.random() * 20) + 's';
+      h.style.opacity = (.15 + Math.random() * .38).toFixed(2);
+      particles.appendChild(h);
+    }
+  </script>
+</body>
+</html>
