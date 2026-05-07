@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Velvet Nights — Couple Streaming</title>
+  <style>
+    :root{
+      --bg:#0b0b0b;
+      --panel:rgba(255,255,255,.08);
+      --panel-strong:rgba(255,255,255,.14);
+      --txt:#f9f6ff;
+      --muted:#c7c0d7;
+      --accent:#ff6ba3;
+      --accent2:#8e7dff;
+      --ok:#7ff2cd;
+      --blur:18px;
+      --radius:20px;
+      --shadow:0 20px 60px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.2);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto;
+      color:var(--txt); background:var(--bg); min-height:100vh; overflow-x:hidden;
+    }
+    .ambient,.ambient::before,.ambient::after{
+      position:fixed; inset:-20%; pointer-events:none; z-index:-2;
+      background:radial-gradient(circle at 18% 20%, rgba(229,9,20,.42), transparent 38%),
+                 radial-gradient(circle at 78% 30%, rgba(181,12,28,.30), transparent 36%),
+                 radial-gradient(circle at 50% 85%, rgba(110,0,10,.22), transparent 34%);
+      filter:blur(40px) saturate(140%); animation:floatBg 18s ease-in-out infinite alternate;
+    }
+    .ambient::before,.ambient::after{content:""}
+    .ambient::before{transform:translate(8%,-6%) scale(1.1); animation-duration:26s}
+    .ambient::after{transform:translate(-7%,9%) scale(.9); animation-duration:22s}
+    @keyframes floatBg{to{transform:translate3d(2%,-3%,0) scale(1.06)}}
+
+    .screen{min-height:100vh; padding:24px; display:none; opacity:0; transform:translateY(8px); transition:.6s ease}
+    .screen.active{display:block; opacity:1; transform:none}
+
+    .glass{background:var(--panel); border:1px solid rgba(255,255,255,.15); backdrop-filter:blur(var(--blur)); -webkit-backdrop-filter:blur(var(--blur)); border-radius:var(--radius); box-shadow:var(--shadow)}
+    .title{font-size:clamp(2rem,4vw,3.6rem); text-align:center; letter-spacing:.4px; margin:40px 0 12px}
+    .sub{color:var(--muted); text-align:center; margin-bottom:28px}
+
+    /* Profile Screen */
+    .profiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:20px; max-width:900px; margin:0 auto}
+    .profile-card{padding:20px; text-align:center; cursor:pointer; transition:transform .35s ease, box-shadow .35s ease; position:relative; overflow:hidden}
+    .profile-card:hover{transform:translateY(-8px) scale(1.02); box-shadow:0 24px 70px rgba(255,107,163,.25), var(--shadow)}
+    .profile-card::after{content:""; position:absolute; inset:auto -40% -50% -40%; height:120px; background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent); transform:rotate(-5deg); transition:transform .6s ease}
+    .profile-card:hover::after{transform:translateY(-16px) rotate(-5deg)}
+    .avatar{width:94px; height:94px; border-radius:50%; margin:0 auto 12px; border:2px solid rgba(255,255,255,.45); box-shadow:0 0 35px rgba(255,107,163,.35); object-fit:cover}
+
+    /* Main */
+    .topbar{position:sticky; top:0; z-index:10; display:flex; justify-content:space-between; align-items:center; padding:12px 16px; margin-bottom:16px}
+    .brand{font-weight:700; letter-spacing:.6px}
+    .chip{padding:10px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.1); color:var(--txt)}
+    .hero{display:grid; grid-template-columns:1.4fr 1fr; gap:18px; padding:20px; margin-bottom:24px}
+    .hero-media{min-height:300px; border-radius:16px; background:linear-gradient(120deg, rgba(255,107,163,.48), rgba(142,125,255,.38)), url('https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1400&q=80') center/cover; position:relative; overflow:hidden}
+    .hero-overlay{position:absolute; inset:0; background:linear-gradient(180deg,transparent,rgba(7,8,14,.85)); display:flex; align-items:flex-end; padding:22px}
+    .hero h2{margin:0 0 8px; font-size:clamp(1.6rem,3vw,2.8rem)}
+    .btn{border:none; color:var(--txt); padding:11px 16px; border-radius:13px; cursor:pointer; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.2); backdrop-filter:blur(8px); transition:transform .25s ease, background .25s}
+    .btn:hover{transform:translateY(-2px); background:rgba(255,255,255,.2)}
+    .rows{display:grid; gap:22px}
+    .row h3{margin:0 0 10px}
+    .cards{display:flex; overflow-x:auto; gap:12px; padding-bottom:4px}
+    .cards::-webkit-scrollbar{height:7px} .cards::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25); border-radius:999px}
+
+    .cards{scroll-snap-type:x mandatory}
+    .card{scroll-snap-align:start}
+    .auto-scroll{overflow-x:auto; scrollbar-width:thin}
+    .auto-scroll-track{display:flex; gap:12px; width:max-content; animation:marquee 30s linear infinite}
+    .auto-scroll:hover .auto-scroll-track{animation-play-state:paused}
+    @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+    footer.site-footer{margin:28px 0 8px; text-align:center; color:#ffd9e6; opacity:.92; font-weight:500}
+    .card{min-width:180px; aspect-ratio:16/9; border-radius:14px; position:relative; overflow:hidden; cursor:pointer; transition:transform .35s ease, box-shadow .35s ease}
+    .card:hover{transform:scale(1.08); z-index:2; box-shadow:0 22px 48px rgba(0,0,0,.48)}
+    .card img{width:100%; height:100%; object-fit:cover}
+    .card .meta{position:absolute; inset:auto 0 0; padding:10px; background:linear-gradient(transparent, rgba(0,0,0,.9)); font-size:.9rem}
+
+    .letters{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px}
+    .letter{padding:16px; min-height:140px}
+    .editable{outline:none}
+
+    /* Video Modal */
+    .player-modal{position:fixed; inset:0; background:rgba(4,5,9,.75); backdrop-filter:blur(14px); display:none; align-items:center; justify-content:center; padding:18px; z-index:40}
+    .player-modal.open{display:flex; animation:fadeIn .45s ease}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .player-shell{width:min(980px,100%); padding:14px}
+    video{width:100%; border-radius:14px; background:#000}
+    .controls{display:flex; align-items:center; gap:10px; margin-top:10px}
+    input[type=range]{flex:1}
+
+    @media (max-width:860px){
+      .hero{grid-template-columns:1fr}
+      .screen{padding:16px}
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient"></div>
+
+  <!-- PROFILE SCREEN -->
+  <section id="profilesScreen" class="screen active">
+    <h1 class="title">Who’s Watching Tonight?</h1>
+    <p class="sub">Choose your profile and step into your shared cinematic universe.</p>
+    <div class="profiles">
+      <!-- EDIT PROFILE IMAGE HERE -->
+      <!-- EDIT PROFILE NAME HERE -->
+      <article class="glass profile-card" data-profile="Luna"><img class="avatar" src="https://i.pravatar.cc/200?img=47" alt="Luna"><div>Luna</div></article>
+      <article class="glass profile-card" data-profile="Noah"><img class="avatar" src="https://i.pravatar.cc/200?img=12" alt="Noah"><div>Noah</div></article>
+      <article class="glass profile-card" data-profile="Us"><img class="avatar" src="https://i.pravatar.cc/200?img=20" alt="Us"><div>Us</div></article>
+      <article class="glass profile-card" data-profile="Guest"><img class="avatar" src="https://i.pravatar.cc/200?img=31" alt="Guest"><div>Guest</div></article>
+    </div>
+  </section>
+
+  <!-- MAIN APP -->
+  <section id="mainScreen" class="screen">
+    <header class="glass topbar">
+      <div class="brand">Velvet Nights</div>
+      <div>
+        <button id="switchProfile" class="chip">Switch Profile</button>
+        <span id="activeProfile" class="chip">For You</span>
+      </div>
+    </header>
+
+    <section class="glass hero">
+      <div class="hero-media">
+        <div class="hero-overlay">
+          <div>
+            <!-- EDIT FEATURED TITLE HERE -->
+            <h2>Midnight in Your Eyes</h2>
+            <p>A dreamy feature made for two hearts synced in one story.</p>
+            <button class="btn play-item" data-video="https://www.w3schools.com/html/mov_bbb.mp4" data-title="Midnight in Your Eyes">Play</button>
+          </div>
+        </div>
+      </div>
+      <div class="glass" style="padding:16px">
+        <h3>Continue Watching</h3>
+        <p class="sub" style="text-align:left;margin:0 0 10px">Pick up your moments together.</p>
+        <button class="btn play-item" data-video="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" data-title="Moonlight Letters">Moonlight Letters — 62%</button>
+        <br><br>
+        <button class="btn play-item" data-video="https://www.w3schools.com/html/movie.mp4" data-title="Parallel Souls">Parallel Souls — 28%</button>
+      </div>
+    </section>
+
+    <div class="rows">
+      <!-- EDIT THUMBNAILS / TITLES HERE -->
+      <section class="row"><h3>Romantic Originals</h3><div class="cards auto-scroll" id="row1"></div></section>
+      <section class="row"><h3>Dreamy Escapes</h3><div class="cards" id="row2"></div></section>
+
+      <section class="row">
+        <h3>Love Letters</h3>
+        <div class="letters">
+          <!-- EDIT ROMANTIC LETTERS HERE -->
+          <article class="glass letter editable" contenteditable="true">You are my favorite place to return to, every single day. 💗</article>
+          <article class="glass letter editable" contenteditable="true">Tonight, let’s watch the stars and promise forever again.</article>
+          <article class="glass letter editable" contenteditable="true">Our story is my comfort series — endless, warm, and beautifully ours.</article>
+        </div>
+      </section>
+    </div>
+    <footer class="site-footer">made with love and all my heart ❤️</footer>
+  </section>
+
+  <!-- PLAYER MODAL -->
+  <section id="playerModal" class="player-modal">
+    <div class="glass player-shell">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong id="playerTitle">Now Playing</strong>
+        <button id="closePlayer" class="btn">Close</button>
+      </div>
+      <!-- EDIT VIDEO SOURCE HERE via card/button data-video attributes -->
+      <video id="video" preload="metadata"></video>
+      <div class="controls">
+        <button id="playPause" class="btn">Play</button>
+        <input id="progress" type="range" min="0" max="100" value="0" />
+        <input id="volume" type="range" min="0" max="1" value="0.8" step="0.01" style="max-width:120px"/>
+        <button id="fs" class="btn">Fullscreen</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const qs = s => document.querySelector(s);
+    const qsa = s => [...document.querySelectorAll(s)];
+
+    // Screen transitions
+    const profilesScreen = qs('#profilesScreen');
+    const mainScreen = qs('#mainScreen');
+    const activeProfile = qs('#activeProfile');
+
+    qsa('.profile-card').forEach(card => {
+      card.onclick = () => {
+        activeProfile.textContent = card.dataset.profile;
+        profilesScreen.classList.remove('active');
+        setTimeout(()=>mainScreen.classList.add('active'), 220);
+      };
+    });
+    qs('#switchProfile').onclick = ()=>{mainScreen.classList.remove('active'); setTimeout(()=>profilesScreen.classList.add('active'), 220)};
+
+    // Dynamic rows
+    const catalog = [
+      // EDIT MOVIE TITLES / THUMBNAILS / VIDEOS HERE
+      {title:'Cherry Blossom Promises',thumb:'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=900&q=80',video:'https://www.w3schools.com/html/mov_bbb.mp4'},
+      {title:'Candlelight Symphony',thumb:'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=80',video:'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'},
+      {title:'Golden Hour Kisses',thumb:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=80',video:'https://www.w3schools.com/html/movie.mp4'},
+      {title:'Whispers in Paris',thumb:'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=900&q=80',video:'https://www.w3schools.com/html/mov_bbb.mp4'},
+      {title:'Starlit Balcony',thumb:'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?auto=format&fit=crop&w=900&q=80',video:'https://www.w3schools.com/html/movie.mp4'},
+      {title:'Velvet Sunday',thumb:'https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=900&q=80',video:'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'}
+    ];
+
+    function cardsMarkup(items){
+      return items.map(i => `
+        <article class="card play-item" data-title="${i.title}" data-video="${i.video}">
+          <img src="${i.thumb}" alt="${i.title}">
+          <div class="meta">${i.title}</div>
+        </article>
+      `).join('');
+    }
+
+    function renderRow(el, items){
+      if(el.classList.contains('auto-scroll')){
+        const loop = cardsMarkup(items) + cardsMarkup(items);
+        el.innerHTML = `<div class="auto-scroll-track">${loop}</div>`;
+      } else {
+        el.innerHTML = cardsMarkup(items);
+      }
+    }
+    renderRow(qs('#row1'), catalog.slice(0,4));
+    renderRow(qs('#row2'), catalog.slice(2));
+
+    // Player
+    const playerModal = qs('#playerModal');
+    const video = qs('#video');
+    const playPause = qs('#playPause');
+    const progress = qs('#progress');
+    const volume = qs('#volume');
+
+    function bindPlays(){
+      qsa('.play-item').forEach(el => el.onclick = () => {
+        qs('#playerTitle').textContent = el.dataset.title || 'Now Playing';
+        video.src = el.dataset.video; playerModal.classList.add('open'); video.play(); playPause.textContent='Pause';
+      });
+    }
+    bindPlays();
+    qs('#closePlayer').onclick=()=>{video.pause(); playerModal.classList.remove('open')};
+    playPause.onclick=()=>{if(video.paused){video.play();playPause.textContent='Pause'}else{video.pause();playPause.textContent='Play'}};
+    video.ontimeupdate=()=>{if(video.duration) progress.value = video.currentTime/video.duration*100};
+    progress.oninput=()=>{if(video.duration) video.currentTime=(progress.value/100)*video.duration};
+    volume.oninput=()=>video.volume=volume.value;
+    qs('#fs').onclick=()=>video.requestFullscreen?.();
+  </script>
+</body>
+</html>
