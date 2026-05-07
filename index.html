@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COUPLEFLIX</title>
+  <style>
+    :root{--brand:#ff3b5f;--brand2:#ff6b8f;--bg:#09090d;--glass:rgba(255,255,255,.12);--text:#f8f4f6;--muted:#c5b5bf}
+    *{box-sizing:border-box} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,Segoe UI,sans-serif;overflow-x:hidden;cursor:none}
+    body::before,body::after{content:"";position:fixed;inset:-20%;z-index:-3;filter:blur(100px);animation:drift 16s ease-in-out infinite alternate}
+    body::before{background:radial-gradient(circle,#9f1332 0%,transparent 60%);transform:translate(-20%,-10%)}
+    body::after{background:radial-gradient(circle,#2b0614 0%,transparent 60%);transform:translate(30%,20%)}
+    @keyframes drift{to{transform:translate(15%,10%) scale(1.15)}}
+    .noise{position:fixed;inset:0;pointer-events:none;background:radial-gradient(circle at 20% 20%,rgba(255,255,255,.04),transparent 35%),radial-gradient(circle at 80% 70%,rgba(255,120,160,.08),transparent 35%);mix-blend-mode:screen;z-index:-1;animation:pulse 7s ease infinite}
+    @keyframes pulse{50%{opacity:.5}}
+    .screen{position:fixed;inset:0;display:grid;place-items:center;transition:opacity .8s,visibility .8s}
+    .hidden{opacity:0;visibility:hidden;pointer-events:none}
+    #loader{background:linear-gradient(130deg,#0b0b11,#320812,#790f2a,#14070f);background-size:220% 220%;animation:gradientShift 9s ease infinite}
+    @keyframes gradientShift{50%{background-position:100% 50%}}
+    .logo{font-size:clamp(2rem,8vw,5rem);font-weight:900;letter-spacing:.15em;text-shadow:0 0 35px rgba(255,79,124,.8);animation:fadeRise 2s both}
+    @keyframes fadeRise{from{opacity:0;transform:translateY(35px) scale(.95)}to{opacity:1;transform:none}}
+    .particles{position:absolute;inset:0;overflow:hidden}
+    .particle{position:absolute;border-radius:50%;background:rgba(255,120,160,.35);filter:blur(2px);animation:floatUp linear infinite}
+    @keyframes floatUp{from{transform:translateY(100vh) scale(.7)}to{transform:translateY(-20vh) scale(1.25)}}
+
+    #profiles{background:rgba(6,6,10,.75);backdrop-filter:blur(14px)}
+    .profiles-wrap{width:min(1100px,92vw);text-align:center}
+    .profiles-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:22px;margin-top:2rem}
+    .profile{padding:14px;border-radius:22px;background:linear-gradient(160deg,rgba(255,255,255,.16),rgba(255,255,255,.06));border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(14px);transition:.4s;cursor:pointer}
+    .profile:hover{transform:translateY(-8px) scale(1.03);box-shadow:0 16px 45px rgba(255,40,90,.25)}
+    .avatar{width:100%;aspect-ratio:1/1;border-radius:18px;background-size:cover;background-position:center}
+    .name{margin-top:10px;color:#f0dde5}
+
+    #app{opacity:0;transform:scale(1.02);transition:1s}
+    #app.show{opacity:1;transform:none}
+    header{position:sticky;top:0;z-index:40;padding:14px 4vw;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(0,0,0,.66),transparent)}
+    .brand{font-weight:800;letter-spacing:.12em}
+    .glass-btn{border:1px solid rgba(255,255,255,.25);background:linear-gradient(180deg,rgba(255,255,255,.24),rgba(255,255,255,.08));color:white;padding:.72rem 1.1rem;border-radius:999px;backdrop-filter:blur(14px);cursor:pointer;transition:.25s}
+    .glass-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(255,60,110,.28)}
+    .hero{min-height:74vh;padding:7rem 4vw 3rem;display:grid;align-items:end;position:relative;overflow:hidden}
+    .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 35%,rgba(255,61,114,.22),transparent 48%),linear-gradient(to top,rgba(5,5,10,.9),rgba(5,5,10,.18));pointer-events:none}
+    .hero-content{position:relative;max-width:720px}
+    .eyebrow{color:#ffd5df;letter-spacing:.2em;font-size:.75rem}
+    h1{font-size:clamp(2.3rem,6vw,4.4rem);margin:.4rem 0 1rem}
+    p{color:var(--muted);line-height:1.65}
+    .hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:1.4rem}
+
+    section.row{padding:0 4vw 2rem}
+    .row h2{font-size:1.2rem;margin:.4rem 0 1rem}
+    .rail{display:flex;gap:14px;overflow:auto;padding-bottom:8px;scrollbar-width:thin}
+    .card{min-width:210px;width:210px;position:relative;padding:10px;border-radius:16px;background:linear-gradient(160deg,rgba(255,255,255,.15),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.18);transform-style:preserve-3d;transition:transform .25s,box-shadow .25s}
+    .card img{width:100%;height:290px;object-fit:cover;border-radius:12px}
+    .card span{display:block;margin-top:.6rem}
+    .card::after{content:"";position:absolute;inset:0;border-radius:16px;background:linear-gradient(120deg,transparent,rgba(255,255,255,.27),transparent);transform:translateX(-120%);transition:.5s}
+    .card:hover::after{transform:translateX(120%)}
+
+    .gallery{padding:4rem 4vw;display:grid;grid-template-columns:1.1fr 1fr;gap:22px;align-items:center}
+    .gallery h3{font-size:clamp(2rem,5vw,3.2rem);margin:0 0 1rem}
+    .gallery-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .gallery-grid img{width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:18px;transition:.4s}
+    .gallery-grid img:hover{transform:scale(1.04) translateY(-3px)}
+
+    .player-wrap{padding:2rem 4vw 4rem;display:grid;grid-template-columns:1.2fr .8fr;gap:22px}
+    .player-shell{background:linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:14px;box-shadow:0 0 45px rgba(255,60,110,.18)}
+    video{width:100%;border-radius:12px;background:#000}
+    .controls{display:flex;gap:10px;align-items:center;margin-top:10px}
+    input[type=range]{flex:1}
+    .letter{padding:18px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);font-family:"Brush Script MT",cursive;font-size:1.8rem;line-height:1.35;animation:fadeRise 1s both}
+
+    footer{text-align:center;padding:2.2rem 1rem;color:#ffdbe5;text-shadow:0 0 18px rgba(255,120,160,.5);animation:pulse 4s infinite}
+
+    .cursor,.cursor-trail{position:fixed;top:0;left:0;pointer-events:none;border-radius:50%;mix-blend-mode:screen;z-index:200}
+    .cursor{width:14px;height:14px;background:#ffd0dc;box-shadow:0 0 18px #ff4f86}
+    .cursor-trail{width:34px;height:34px;border:1px solid rgba(255,173,200,.6);transition:transform .12s,width .2s,height .2s,background .2s}
+
+    @media (max-width:900px){.gallery,.player-wrap{grid-template-columns:1fr}.hero{min-height:62vh}}
+  </style>
+</head>
+<body>
+<div class="noise"></div>
+<div id="loader" class="screen">
+  <div class="particles" id="particles"></div>
+  <!-- EDIT HERE -->
+  <div class="logo">❤️ COUPLEFLIX</div>
+</div>
+
+<div id="profiles" class="screen hidden">
+  <div class="profiles-wrap">
+    <h2>Who’s Watching?</h2>
+    <div class="profiles-grid">
+      <!-- EDIT HERE -->
+      <div class="profile" data-profile="Luna"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop')"></div><div class="name">Luna</div></div>
+      <div class="profile" data-profile="Noah"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=800&auto=format&fit=crop')"></div><div class="name">Noah</div></div>
+      <div class="profile" data-profile="Mia"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=800&auto=format&fit=crop')"></div><div class="name">Mia</div></div>
+      <div class="profile" data-profile="Eli"><div class="avatar" style="background-image:url('https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=800&auto=format&fit=crop')"></div><div class="name">Eli</div></div>
+    </div>
+  </div>
+</div>
+
+<main id="app">
+  <header><div class="brand">❤️ COUPLEFLIX</div><button class="glass-btn" id="soundBtn">Sound: Off</button></header>
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <div class="eyebrow">FEATURED TONIGHT</div>
+      <!-- EDIT HERE -->
+      <h1>Midnight in Our Memory Lane</h1>
+      <p>Two hearts. One story. Press play and relive every laugh, every adventure, and every beautiful little chaos we call love.</p>
+      <div class="hero-actions"><button class="glass-btn">▶ Play</button><button class="glass-btn">Our Memories</button></div>
+    </div>
+  </section>
+
+  <div id="rows"></div>
+
+  <section class="gallery">
+    <div>
+      <h3>Studio of Us</h3>
+      <!-- EDIT HERE -->
+      <p>An editorial love archive—frames from our tiny infinities, stitched into a cinematic diary.</p>
+    </div>
+    <div class="gallery-grid">
+      <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?q=80&w=900&auto=format&fit=crop" alt="">
+      <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?q=80&w=900&auto=format&fit=crop" alt="">
+      <img src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?q=80&w=900&auto=format&fit=crop" alt="">
+      <img src="https://images.unsplash.com/photo-1516589091380-5d8e87df6999?q=80&w=900&auto=format&fit=crop" alt="">
+    </div>
+  </section>
+
+  <section class="player-wrap">
+    <div class="player-shell">
+      <!-- EDIT HERE -->
+      <video id="video" src="https://cdn.coverr.co/videos/coverr-holding-hands-on-the-beach-1579/1080p.mp4"></video>
+      <div class="controls">
+        <button class="glass-btn" id="playPause">Play</button>
+        <input id="seek" type="range" min="0" max="100" value="0">
+        <button class="glass-btn" id="fs">Fullscreen</button>
+      </div>
+    </div>
+    <div class="letter">
+      <!-- EDIT HERE -->
+      To my favorite person—if forever had a face, it would look like you in golden-hour light.
+    </div>
+  </section>
+
+  <!-- EDIT HERE -->
+  <footer>Made with love and all my heart.</footer>
+</main>
+
+<div class="cursor"></div><div class="cursor-trail"></div>
+<script>
+  const loader = document.getElementById('loader');
+  const profiles = document.getElementById('profiles');
+  const app = document.getElementById('app');
+  const rowsEl = document.getElementById('rows');
+  const categories = ["Continue Watching ❤️","Our Favorite Memories ✨","Romantic Chaos 💌","Date Night Movies 🌙","Comfort Films ☁️","Love Letters 💖"];
+  const covers = [
+    'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?q=80&w=600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1474552226712-ac0f0961a954?q=80&w=600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=600&auto=format&fit=crop',
+    'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=600&auto=format&fit=crop'
+  ];
+  categories.forEach((c,i)=>{ const sec=document.createElement('section'); sec.className='row'; sec.innerHTML=`<h2>${c}</h2><div class="rail">${Array.from({length:8}).map((_,j)=>`<article class="card"><!-- EDIT HERE --><img src="${covers[(i+j)%covers.length]}" alt=""><span>Episode ${j+1}: Our Little Infinity</span></article>`).join('')}</div>`; rowsEl.appendChild(sec);});
+
+  const pWrap=document.getElementById('particles'); for(let i=0;i<26;i++){const d=document.createElement('div');d.className='particle';const s=Math.random()*18+8;d.style.width=d.style.height=s+'px';d.style.left=Math.random()*100+'%';d.style.animationDuration=(Math.random()*9+8)+'s';d.style.animationDelay=(Math.random()*5)+'s';pWrap.appendChild(d)}
+  setTimeout(()=>{loader.classList.add('hidden'); profiles.classList.remove('hidden')},2300);
+  document.querySelectorAll('.profile').forEach(p=>p.addEventListener('click',()=>{profiles.style.backdropFilter='blur(26px)';profiles.style.opacity='.2';setTimeout(()=>{profiles.classList.add('hidden');app.classList.add('show');window.scrollTo({top:0})},500)}));
+
+  document.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('mousemove',e=>{const r=card.getBoundingClientRect();const x=e.clientX-r.left,y=e.clientY-r.top;const rx=(y-r.height/2)/10, ry=(r.width/2-x)/12;card.style.transform=`perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.06)`});
+    card.addEventListener('mouseleave',()=>card.style.transform='');
+  });
+
+  const hero=document.getElementById('hero'); hero.addEventListener('mousemove',e=>{const x=(e.clientX/window.innerWidth-.5)*18,y=(e.clientY/window.innerHeight-.5)*18;hero.style.backgroundPosition=`${50+x}% ${50+y}%`});
+
+  const v=document.getElementById('video'),playBtn=document.getElementById('playPause'),seek=document.getElementById('seek');
+  playBtn.onclick=()=>{if(v.paused){v.play();playBtn.textContent='Pause'}else{v.pause();playBtn.textContent='Play'}};
+  v.ontimeupdate=()=>seek.value=(v.currentTime/v.duration||0)*100;
+  seek.oninput=()=>v.currentTime=(seek.value/100)*(v.duration||0);
+  document.getElementById('fs').onclick=()=>v.requestFullscreen?.();
+
+  const c=document.querySelector('.cursor'),t=document.querySelector('.cursor-trail'); let mx=innerWidth/2,my=innerHeight/2,tx=mx,ty=my;
+  addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+  function loop(){tx+=(mx-tx)*.18;ty+=(my-ty)*.18;c.style.transform=`translate(${mx-7}px,${my-7}px)`;t.style.transform=`translate(${tx-17}px,${ty-17}px)`;requestAnimationFrame(loop)} loop();
+  document.querySelectorAll('button,.card,video,.profile').forEach(el=>{el.addEventListener('mouseenter',()=>{t.style.width=t.style.height='54px';t.style.background='rgba(255,120,160,.14)'});el.addEventListener('mouseleave',()=>{t.style.width=t.style.height='34px';t.style.background='transparent'})});
+
+  let sound=false; document.getElementById('soundBtn').onclick=e=>{sound=!sound;e.target.textContent=`Sound: ${sound?'On':'Off'}`};
+
+  const io=new IntersectionObserver((entries)=>entries.forEach(en=>{if(en.isIntersecting){en.target.animate([{opacity:0,transform:'translateY(16px)'},{opacity:1,transform:'none'}],{duration:700,fill:'forwards'})}}),{threshold:.12});
+  document.querySelectorAll('section,.player-shell,.letter').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
