@@ -6,7 +6,7 @@
   <title>Velvet Nights — Couple Streaming</title>
   <style>
     :root{
-      --bg:#07080e;
+      --bg:#0b0b0b;
       --panel:rgba(255,255,255,.08);
       --panel-strong:rgba(255,255,255,.14);
       --txt:#f9f6ff;
@@ -25,9 +25,9 @@
     }
     .ambient,.ambient::before,.ambient::after{
       position:fixed; inset:-20%; pointer-events:none; z-index:-2;
-      background:radial-gradient(circle at 20% 20%, rgba(255,107,163,.30), transparent 38%),
-                 radial-gradient(circle at 80% 30%, rgba(142,125,255,.26), transparent 36%),
-                 radial-gradient(circle at 60% 80%, rgba(127,242,205,.16), transparent 30%);
+      background:radial-gradient(circle at 18% 20%, rgba(229,9,20,.42), transparent 38%),
+                 radial-gradient(circle at 78% 30%, rgba(181,12,28,.30), transparent 36%),
+                 radial-gradient(circle at 50% 85%, rgba(110,0,10,.22), transparent 34%);
       filter:blur(40px) saturate(140%); animation:floatBg 18s ease-in-out infinite alternate;
     }
     .ambient::before,.ambient::after{content:""}
@@ -64,6 +64,14 @@
     .row h3{margin:0 0 10px}
     .cards{display:flex; overflow-x:auto; gap:12px; padding-bottom:4px}
     .cards::-webkit-scrollbar{height:7px} .cards::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25); border-radius:999px}
+
+    .cards{scroll-snap-type:x mandatory}
+    .card{scroll-snap-align:start}
+    .auto-scroll{overflow-x:auto; scrollbar-width:thin}
+    .auto-scroll-track{display:flex; gap:12px; width:max-content; animation:marquee 30s linear infinite}
+    .auto-scroll:hover .auto-scroll-track{animation-play-state:paused}
+    @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+    footer.site-footer{margin:28px 0 8px; text-align:center; color:#ffd9e6; opacity:.92; font-weight:500}
     .card{min-width:180px; aspect-ratio:16/9; border-radius:14px; position:relative; overflow:hidden; cursor:pointer; transition:transform .35s ease, box-shadow .35s ease}
     .card:hover{transform:scale(1.08); z-index:2; box-shadow:0 22px 48px rgba(0,0,0,.48)}
     .card img{width:100%; height:100%; object-fit:cover}
@@ -137,7 +145,7 @@
 
     <div class="rows">
       <!-- EDIT THUMBNAILS / TITLES HERE -->
-      <section class="row"><h3>Romantic Originals</h3><div class="cards" id="row1"></div></section>
+      <section class="row"><h3>Romantic Originals</h3><div class="cards auto-scroll" id="row1"></div></section>
       <section class="row"><h3>Dreamy Escapes</h3><div class="cards" id="row2"></div></section>
 
       <section class="row">
@@ -150,6 +158,7 @@
         </div>
       </section>
     </div>
+    <footer class="site-footer">made with love and all my heart ❤️</footer>
   </section>
 
   <!-- PLAYER MODAL -->
@@ -199,13 +208,22 @@
       {title:'Velvet Sunday',thumb:'https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=900&q=80',video:'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4'}
     ];
 
-    function renderRow(el, items){
-      el.innerHTML = items.map(i => `
+    function cardsMarkup(items){
+      return items.map(i => `
         <article class="card play-item" data-title="${i.title}" data-video="${i.video}">
           <img src="${i.thumb}" alt="${i.title}">
           <div class="meta">${i.title}</div>
         </article>
       `).join('');
+    }
+
+    function renderRow(el, items){
+      if(el.classList.contains('auto-scroll')){
+        const loop = cardsMarkup(items) + cardsMarkup(items);
+        el.innerHTML = `<div class="auto-scroll-track">${loop}</div>`;
+      } else {
+        el.innerHTML = cardsMarkup(items);
+      }
     }
     renderRow(qs('#row1'), catalog.slice(0,4));
     renderRow(qs('#row2'), catalog.slice(2));
